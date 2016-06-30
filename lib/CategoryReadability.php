@@ -7,7 +7,7 @@ namespace Firebus;
  */
 class CategoryReadability {
 	
-	const CMLIMIT = 5;
+	const CMLIMIT = 50;
 
 	/** @var string $apiUrl without protocol we're going to assume https:// */
 	private $apiUrl;
