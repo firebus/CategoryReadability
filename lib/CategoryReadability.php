@@ -30,22 +30,25 @@ class CategoryReadability {
 	public function execute() {
 		$scoredPages = array();
 		$pages = $this->getPagesForCategory();
-		foreach ($pages as $page) {
-			$parsedPage = $this->getParsedPage($page['id']);
-			$firstGraph = $this->getFirstGraph($parsedPage);
-			$score = $this->scoreText($firstGraph);
-			$scoredPages[$page['id']] = array(
-				'title' => $page['title'],
-				'url' => $page['url'],
-				'score' => $page['score'],
-			);
+		foreach ($pages as &$page) {
+			$extract = $this->getExtract($page->pageid);
+			$page->score = $this->scoreText($extract);
 		}
 		
-		$this->output->articleList($scoredPages);
+		$this->output->articleList($pages);
 	}
 	
-	private function getPagesForCategory() {}
-	private function getParsedPage($pageId) {}
-	private function getFirstGraph($html) {}
+	/**
+	 * Make an API call to Categorymembers
+	 * @todo sanity apiUrl and category
+	 * @return array of pages
+	 */
+	private function getPagesForCategory() {
+		$url = "https://{$this->apiUrl}?action=query&list=categorymembers&cmtitle=Category:{$this->category}&cmlimit=50&cmtype=page&format=json";		
+		$pages = json_decode(file_get_contents($url));
+		return $pages->query->categorymembers;
+	}
+	
+	private function getExtract($pageId) {}
 	private function scoreText($text) {}
 }
