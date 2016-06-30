@@ -1,0 +1,16 @@
+{
+    "name": "vendor/category-readability",
+    "description": "Rank pages in a mediawiki category by readability of first paragraph",
+    "authors": [
+        {
+            "name": "Russell Uman",
+            "email": "russ@firebus.com"
+        }
+    ],
+    "require": {
+        "davechild/textstatistics": "1.0.1"
+    },
+	"autoload": {
+		"psr-4": {"Firebus\\": "lib/"}
+	}
+}
