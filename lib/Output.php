@@ -15,10 +15,12 @@ class Output {
 		$this->$contentType = $contentType;
 	}
 	
+	/**
+	 * Usage instructions for this applicaiton
+	 */
 	public function helpMessage() {
 		$this->header();
-		echo "<h1>Category Readability</h1>\n"
-		. "<p>Generate a list of mediawiki articles from a specific category, ordered from least to most readable, "
+		echo "<p>Generate a list of mediawiki articles from a specific category, ordered from least to most readable, "
 		. "according to the Flesch-Kincaid Reading Ease score of the first paragraph of each article<p>\n"
 		. "<p>Query parameters:</p>\n"
 		. "<dl>\n"
@@ -27,13 +29,16 @@ class Output {
 		. "</dl>\n";
 		$this->footer();
 	}
-	public function pageList($scoredPages) {
+	
+	public function articleList($scoredPages) {
 		$this->header();
+		echo "<p>Under construction</p>\n"
+		. "<img src=\"http://www.ict-romeo.eu/images/Under-Construction.gif\">";
 		$this->footer();
 	}
 
 	private function header() {
-		echo "<html>\n<body>\n";
+		echo "<html>\n<body>\n<h1>Category Readability</h1>\n";
 	}
 
 	private function footer() {

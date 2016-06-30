@@ -7,6 +7,11 @@ require __DIR__ . '/vendor/autoload.php';
  * @see https://en.wikipedia.org/wiki/Content_negotiation
  */
 $output = new Firebus\Output($_SERVER['HTTP_ACCEPT']);
-$catread = new Firebus\CategoryReadability();
 
-$output->helpMessage();
+if (!empty($_GET['apiUrl'])
+	&& !empty($_GET['category'])) {
+	$catread = new Firebus\CategoryReadability($_GET['apiUrl'], $_GET['category'], $output);
+	$catread->execute();
+} else {
+	$output->helpMessage();
+}

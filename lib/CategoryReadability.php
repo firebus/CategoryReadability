@@ -24,6 +24,7 @@ class CategoryReadability {
 	public function __construct($apiUrl, $category, $output) {
 		$this->apiUrl = $apiUrl;
 		$this->category = $category;
+		$this->output = $output;
 	}
 	
 	public function execute() {
