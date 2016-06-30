@@ -38,25 +38,42 @@ class CategoryReadability {
 	 */
 	public function execute() {
 		$pages = $this->getPagesForCategory();
+		$pages = $this->getPageUrls($pages);
 		foreach ($pages as &$page) {
 			$extract = $this->getExtract($page->pageid);
 			$page->score = $this->scoreText($extract);
 		}
 
 		usort($pages, array('Firebus\CategoryReadability', 'sortPages'));
-		$this->output->articleList($pages);
+		$this->output->articleList($this->category, $pages);
 	}
 	
 	/**
 	 * Make an API call to categorymembers
 	 * @todo sanitize apiUrl and category
-	 * @return array of page object
+	 * @return array of page objects
 	 */
 	private function getPagesForCategory() {
 		$url = "https://{$this->apiUrl}?action=query&list=categorymembers&cmtitle=Category:{$this->category}"
 			. "&cmlimit=" . self::CMLIMIT . "&cmtype=page&format=json";
 		$pages = json_decode(file_get_contents($url));
 		return $pages->query->categorymembers;
+	}
+
+	/**
+	 * Make an API call to info to decorate each page with a URL
+	 * @param array $pages of page objects
+	 * @return array of page objects
+	 */
+	private function getPageUrls($pages) {
+		$pageIds = array();
+		foreach ($pages as $page) {
+			$pageIds[] = $page->pageid;
+		}
+		$url = "https://{$this->apiUrl}?action=query&pageids=" . implode("|", $pageIds) . "&prop=info&inprop=url&formatversion=2"
+			. "&format=json";
+		$pages = json_decode(file_get_contents($url));
+		return $pages->query->pages;
 	}
 	
 	/**

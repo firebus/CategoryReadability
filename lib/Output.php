@@ -30,11 +30,14 @@ class Output {
 		$this->footer();
 	}
 	
-	public function articleList($pages) {
+	public function articleList($category, $pages) {
 		$this->header();
+		echo "<h2>Results for $category</h2>\n"
+			. "<ol>\n";
 		foreach ($pages as $page) {
-			echo "<p>{$page->pageid}, {$page->title}, {$page->score}</p>\n";
+			echo "<li><a href=\"{$page->fullurl}\">{$page->title}</a> {$page->score}</li>\n";
 		}
+		echo "</ol>\n";
 		$this->footer();
 	}
 
