@@ -38,10 +38,13 @@ class CategoryReadability {
 	 */
 	public function execute() {
 		$pages = $this->getPagesForCategory();
+		Logger::log('action="get pages" count=' . count($pages), __METHOD__);
 		$pages = $this->getPageUrls($pages);
+		Logger::log('action="get urls" count=' . count($pages), __METHOD__);
 		foreach ($pages as &$page) {
 			$extract = $this->getExtract($page->pageid);
 			$page->score = $this->scoreText($extract);
+			Logger::log('action=score pageid=' . $page->pageid . ' extract="' . addcslashes($extract, '"') . '" score=' . $page->score, __METHOD__);
 		}
 
 		usort($pages, array('Firebus\CategoryReadability', 'sortPages'));
@@ -79,6 +82,7 @@ class CategoryReadability {
 	/**
 	 * Make an API call to extracts
 	 * @note I tried setting multiple pageids and setting exlimit=max, but MW refused to give me more than one extract
+	 * @note Spec requires that we get the first paragraph, instead I'm getting the first 10 sentences.
 	 * @param string $pageid
 	 * @return string
 	 */
