@@ -30,10 +30,11 @@ class Output {
 		$this->footer();
 	}
 	
-	public function articleList($scoredPages) {
+	public function articleList($pages) {
 		$this->header();
-		echo "<p>Under construction</p>\n"
-		. "<img src=\"http://www.ict-romeo.eu/images/Under-Construction.gif\">";
+		foreach ($pages as $page) {
+			echo "<p>{$page->pageid}, {$page->title}, {$page->score}</p>\n";
+		}
 		$this->footer();
 	}
 

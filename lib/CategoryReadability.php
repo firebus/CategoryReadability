@@ -18,10 +18,14 @@ class CategoryReadability {
 	/** @var Output */
 	private $output;
 	
-	public function __construct($apiUrl, $category, $output) {
+	/** @var TextStatistics */
+	private $textStatistics;
+	
+	public function __construct($apiUrl, $category, $output, $textStatistics) {
 		$this->apiUrl = $apiUrl;
 		$this->category = $category;
 		$this->output = $output;
+		$this->textStatistics = $textStatistics;
 	}
 
 	/**
@@ -39,8 +43,8 @@ class CategoryReadability {
 			$page->score = $this->scoreText($extract);
 		}
 
-		$sortedPages = $this->sortPages($pages);
-		$this->output->articleList($sortedPages);
+		usort($pages, array('Firebus\CategoryReadability', 'sortPages'));
+		$this->output->articleList($pages);
 	}
 	
 	/**
@@ -68,6 +72,27 @@ class CategoryReadability {
 		return $extracts->query->pages->$pageid->extract;
 	}
 	
-	private function scoreText($text) {}
-	private function sortPages($pages) {}
+	/**
+	 * Calculate Flesh-Kincaid Reading Ease using external library
+	 * Note, higher scores are easier to read.
+	 * @see https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests#Flesch_reading_ease
+	 * @see https://github.com/DaveChild/Text-Statistics
+	 * @param type $text
+	 * @return float
+	 */
+	private function scoreText($text) {
+		return $this->textStatistics->fleschKincaidReadingEase($text);		
+	}
+
+	/**
+	 * Sort pages by score ascending (i.e. hardest to read/lowest score first)
+	 * @param array $pages array of page objects
+	 * @return array
+	 */
+	private function sortPages($pageA, $pageB) {
+		if ($pageA->score == $pageB->score) {
+			return 0;
+		}
+		return ($pageA->score < $pageB->score) ? -1 : 1;
+	}
 }
