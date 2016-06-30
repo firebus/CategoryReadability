@@ -37,14 +37,32 @@ class CategoryReadability {
 	 * # Send the pages to Output
 	 */
 	public function execute() {
-		$pages = $this->getPagesForCategory();
-		Logger::log('action="get pages" count=' . count($pages), __METHOD__);
-		$pages = $this->getPageUrls($pages);
-		Logger::log('action="get urls" count=' . count($pages), __METHOD__);
+		try {
+			$pages = $this->getPagesForCategory();
+			Logger::log('action="get pages"' . 'count=' . count($pages), __METHOD__);
+		} catch (\Exception $e) {
+			Logger::log('action="get pages" error="no results" url=' . $e->getMessage(), __METHOD__, 'ERROR');
+			$this->output->error($this->category, 'Error getting pages for category');
+		}
+		
+		try {
+			$pages = $this->getPageUrls($pages);
+			Logger::log('action="get urls" count=' . count($pages), __METHOD__);
+		} catch (\Exception $e) {
+			Logger::log('action="get urls" error="no results" url=' . $e->getMessage(), __METHOD__, 'ERROR');
+			$this->output->error($this->category, 'Error getting urls for pages');
+		}
+
+		// Performance could be improved with rolling curl...
 		foreach ($pages as &$page) {
-			$extract = $this->getExtract($page->pageid);
-			$page->score = $this->scoreText($extract);
-			Logger::log('action=score pageid=' . $page->pageid . ' extract="' . addcslashes($extract, '"') . '" score=' . $page->score, __METHOD__);
+			try {
+				$extract = $this->getExtract($page->pageid);
+				$page->score = $this->scoreText($extract);
+				Logger::log('action=score pageid=' . $page->pageid . ' extract="' . addcslashes($extract, '"') . '" score=' . $page->score, __METHOD__);
+			} catch (\Exception $e) {
+				Logger::log('action="get urls" error="no results" url=' . $e->getMessage(), __METHOD__, 'WARNING');
+				$page->score = 'error';
+			}
 		}
 
 		usort($pages, array('Firebus\CategoryReadability', 'sortPages'));
@@ -55,11 +73,16 @@ class CategoryReadability {
 	 * Make an API call to categorymembers
 	 * @todo sanitize apiUrl and category
 	 * @return array of page objects
+	 * @throws UnexpectedValueException
 	 */
 	private function getPagesForCategory() {
 		$url = "https://{$this->apiUrl}?action=query&list=categorymembers&cmtitle=Category:{$this->category}"
 			. "&cmlimit=" . self::CMLIMIT . "&cmtype=page&format=json";
 		$pages = json_decode(file_get_contents($url));
+		if (is_null($pages) 
+			|| !isset($pages->query->categorymembers)) {
+			throw new \UnexpectedValueException($url);
+		}
 		return $pages->query->categorymembers;
 	}
 
@@ -67,6 +90,7 @@ class CategoryReadability {
 	 * Make an API call to info to decorate each page with a URL
 	 * @param array $pages of page objects
 	 * @return array of page objects
+	 * @throws UnexpectedValueException
 	 */
 	private function getPageUrls($pages) {
 		$pageIds = array();
@@ -76,6 +100,10 @@ class CategoryReadability {
 		$url = "https://{$this->apiUrl}?action=query&pageids=" . implode("|", $pageIds) . "&prop=info&inprop=url&formatversion=2"
 			. "&format=json";
 		$pages = json_decode(file_get_contents($url));
+		if (is_null($pages) 
+			|| !isset($pages->query->pages)) {
+			throw new \UnexpectedValueException($url);
+		}
 		return $pages->query->pages;
 	}
 	
@@ -85,11 +113,16 @@ class CategoryReadability {
 	 * @note Spec requires that we get the first paragraph, instead I'm getting the first 10 sentences.
 	 * @param string $pageid
 	 * @return string
+	 * @throws UnexpectedValueException
 	 */
 	private function getExtract($pageid) {
 		$url = "https://{$this->apiUrl}?action=query&prop=extracts&exsentences=10&explaintext&pageids=$pageid"
 			. "&format=json";
 		$extracts = json_decode(file_get_contents($url));
+		if (is_null($extracts) 
+			|| !isset($extracts->query->pages->$pageid->extract)) {
+			throw new \UnexpectedValueException($url);
+		}
 		return $extracts->query->pages->$pageid->extract;
 	}
 	

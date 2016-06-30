@@ -40,6 +40,13 @@ class Output {
 		echo "</ol>\n";
 		$this->footer();
 	}
+	
+	public function error($category, $error) {
+		$this->header();
+		echo "<h2>Error for $category</h2>\n"
+			. "<p>$error</p>\n";
+		$this->footer();
+	}
 
 	private function header() {
 		echo "<html>\n<body>\n<h1>Category Readability</h1>\n";
@@ -47,5 +54,6 @@ class Output {
 
 	private function footer() {
 		echo "</body>\n</html>\n";
+		exit;
 	}
 }
